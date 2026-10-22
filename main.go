@@ -7,12 +7,14 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"slices"
 )
 
 type config struct {
 	stunHost string
 	runCount int
 	timeout  time.Duration
+	scenarios []string
 }
 
 type result struct {
@@ -22,22 +24,26 @@ type result struct {
 
 func main() {
 	cfg := parseFlags()
+	var results []result = []result{}
 
-	results, err := runSTUNRequests(cfg)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
+	if (slices.Contains(cfg.scenarios, "legit")) {
+		results_legit, err := runSTUNRequests(cfg)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		results = append(results, results_legit...)
+		}
 	}
 
-
-	results_mf, err := runMalformedSTUNRequests(cfg)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
+	if (slices.Contains(cfg.scenarios, "malicious")) {
+		results_mf, err := runMalformedSTUNRequests(cfg)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		results = append(results, results_mf...)
 	}
 
-
-	results = append(results, results_mf...)
 
 	printResults(results)
 	printASCIIHistogram(results)
