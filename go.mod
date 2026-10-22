@@ -1,4 +1,4 @@
-module github.com/renandincer/stun-timing
+module github.com/Courtcircuits/sterak
 
 go 1.22.2
 
