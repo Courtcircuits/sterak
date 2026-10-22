@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"net"
+	"strconv"
 	"time"
 
 	"github.com/pion/stun"
@@ -9,7 +11,7 @@ import (
 )
 
 type LegitStun struct {
-	Cfg config
+	Cfg Config
 }
 
 func (ls LegitStun) Run() ([]result, error) {
@@ -19,9 +21,15 @@ func (ls LegitStun) Run() ([]result, error) {
 		return nil, fmt.Errorf("failed to parse STUN URI: %w", err)
 	}
 
-	c, err := stun.DialURI(u, &stun.DialConfig{})
+	conn, err := net.Dial("udp", net.JoinHostPort(u.Host, strconv.Itoa(u.Port)))
 	if err != nil {
 		return nil, fmt.Errorf("failed to dial STUN server: %w", err)
+	}
+
+	c, err := stun.NewClient(cfg.capture.Wrap(conn))
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to create STUN client: %w", err)
 	}
 	defer c.Close()
 

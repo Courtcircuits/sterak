@@ -6,16 +6,10 @@ import (
 	"os"
 	"sort"
 	"strings"
-	"time"
 	"slices"
+
 )
 
-type config struct {
-	stunHost string
-	runCount int
-	timeout  time.Duration
-	scenarios []string
-}
 
 type result struct {
 	time int64
@@ -24,6 +18,17 @@ type result struct {
 
 func main() {
 	cfg := parseFlags()
+	fmt.Println(cfg)
+	if cfg.pcap {
+		capture, err := NewCapture()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		cfg.capture = capture
+		fmt.Printf("Capturing traffic to %s\n", capture.Path())
+	}
+	defer cfg.capture.Close()
 	var results []result = []result{}
 
 	if (slices.Contains(cfg.scenarios, "legit")) {
@@ -31,8 +36,8 @@ func main() {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
-		results = append(results, results_legit...)
 		}
+		results = append(results, results_legit...)
 	}
 
 	if (slices.Contains(cfg.scenarios, "malicious")) {
@@ -50,7 +55,7 @@ func main() {
 }
 
 
-func runSTUNRequests(cfg config) ([]result, error) {
+func runSTUNRequests(cfg Config) ([]result, error) {
 	lg := LegitStun {
 		Cfg: cfg, 
 	}
@@ -59,7 +64,7 @@ func runSTUNRequests(cfg config) ([]result, error) {
 }
 
 
-func runMalformedSTUNRequests(cfg config) ([]result, error) {
+func runMalformedSTUNRequests(cfg Config) ([]result, error) {
 	lg := MalformedStun {
 		Cfg: cfg, 
 	}

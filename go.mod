@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/google/gopacket v1.1.19 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/pion/dtls/v2 v2.2.7 // indirect
 	github.com/pion/logging v0.2.2 // indirect

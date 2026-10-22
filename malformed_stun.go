@@ -14,7 +14,7 @@ import (
 )
 
 type MalformedStun struct {
-	Cfg config
+	Cfg Config
 }
 
 const (
@@ -124,7 +124,7 @@ func (ms MalformedStun) Run() ([]result, error) {
 
 	for i := range cfg.runCount {
 		idx := i % len(malformedCases)
-		reply, elapsed, err := sendRaw(addr, malformedCases[idx].build(), cfg.timeout)
+		reply, elapsed, err := sendRaw(addr, malformedCases[idx].build(), cfg.timeout, cfg.capture)
 
 		// A dropped packet shows up as a timeout error; a reply (even an
 		// error response) is a success from the transport's point of view.
@@ -145,12 +145,13 @@ func (ms MalformedStun) Run() ([]result, error) {
 
 // sendRaw sends payload over a fresh UDP socket (so a late reply to a previous
 // request cannot be mistaken for this one) and waits for a single reply.
-func sendRaw(addr *net.UDPAddr, payload []byte, timeout time.Duration) ([]byte, int64, error) {
-	conn, err := net.DialUDP("udp", nil, addr)
+func sendRaw(addr *net.UDPAddr, payload []byte, timeout time.Duration, capture *Capture) ([]byte, int64, error) {
+	udp, err := net.DialUDP("udp", nil, addr)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to dial STUN server: %w", err)
 	}
-	defer conn.Close()
+	defer udp.Close()
+	conn := capture.Wrap(udp)
 
 	start := time.Now()
 	if _, err := conn.Write(payload); err != nil {
