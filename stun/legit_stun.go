@@ -1,4 +1,4 @@
-package main
+package stun
 
 import (
 	"fmt"
@@ -6,17 +6,18 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Courtcircuits/sterak/config"
 	"github.com/pion/stun"
 	"github.com/schollz/progressbar/v3"
 )
 
 type LegitStun struct {
-	Cfg Config
+	Cfg config.Config
 }
 
-func (ls LegitStun) Run() ([]result, error) {
+func (ls LegitStun) Run() ([]Result, error) {
 	cfg := ls.Cfg
-	u, err := stun.ParseURI("stun:" + cfg.stunHost)
+	u, err := stun.ParseURI("stun:" + cfg.StunHost)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse STUN URI: %w", err)
 	}
@@ -26,19 +27,19 @@ func (ls LegitStun) Run() ([]result, error) {
 		return nil, fmt.Errorf("failed to dial STUN server: %w", err)
 	}
 
-	c, err := stun.NewClient(cfg.capture.Wrap(conn))
+	c, err := stun.NewClient(cfg.Capture.Wrap(conn))
 	if err != nil {
 		conn.Close()
 		return nil, fmt.Errorf("failed to create STUN client: %w", err)
 	}
 	defer c.Close()
 
-	results := make([]result, cfg.runCount)
+	results := make([]Result, cfg.RunCount)
 
 	fmt.Println("Starting STUN requests...")
-	bar := progressbar.Default(int64(cfg.runCount))
+	bar := progressbar.Default(int64(cfg.RunCount))
 
-	for i := 0; i < cfg.runCount; i++ {
+	for i := 0; i < cfg.RunCount; i++ {
 		message := stun.MustBuild(stun.TransactionID, stun.BindingRequest)
 
 		start := time.Now()
@@ -58,7 +59,7 @@ func (ls LegitStun) Run() ([]result, error) {
 		})
 
 		elapsed := time.Since(start).Microseconds()
-		results[i] = result{time: elapsed, err: err}
+		results[i] = Result{Time: elapsed, Err: err}
 
 		bar.Add(1)
 	}

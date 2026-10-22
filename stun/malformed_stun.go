@@ -1,4 +1,4 @@
-package main
+package stun
 
 import (
 	"crypto/rand"
@@ -9,12 +9,14 @@ import (
 	"os"
 	"time"
 
+	"github.com/Courtcircuits/sterak/capture"
+	"github.com/Courtcircuits/sterak/config"
 	"github.com/pion/stun"
 	"github.com/schollz/progressbar/v3"
 )
 
 type MalformedStun struct {
-	Cfg Config
+	Cfg config.Config
 }
 
 const (
@@ -108,27 +110,27 @@ type caseStats struct {
 	lastReply string
 }
 
-func (ms MalformedStun) Run() ([]result, error) {
+func (ms MalformedStun) Run() ([]Result, error) {
 	cfg := ms.Cfg
 
-	addr, err := net.ResolveUDPAddr("udp", cfg.stunHost)
+	addr, err := net.ResolveUDPAddr("udp", cfg.StunHost)
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve STUN host: %w", err)
 	}
 
-	results := make([]result, cfg.runCount)
+	results := make([]Result, cfg.RunCount)
 	stats := make([]caseStats, len(malformedCases))
 
 	fmt.Println("Starting malformed STUN requests...")
-	bar := progressbar.Default(int64(cfg.runCount))
+	bar := progressbar.Default(int64(cfg.RunCount))
 
-	for i := range cfg.runCount {
+	for i := range cfg.RunCount {
 		idx := i % len(malformedCases)
-		reply, elapsed, err := sendRaw(addr, malformedCases[idx].build(), cfg.timeout, cfg.capture)
+		reply, elapsed, err := sendRaw(addr, malformedCases[idx].build(), cfg.Timeout, cfg.Capture)
 
 		// A dropped packet shows up as a timeout error; a reply (even an
 		// error response) is a success from the transport's point of view.
-		results[i] = result{time: elapsed, err: err}
+		results[i] = Result{Time: elapsed, Err: err}
 		stats[idx].sent++
 		if err == nil {
 			stats[idx].responses++
@@ -145,7 +147,7 @@ func (ms MalformedStun) Run() ([]result, error) {
 
 // sendRaw sends payload over a fresh UDP socket (so a late reply to a previous
 // request cannot be mistaken for this one) and waits for a single reply.
-func sendRaw(addr *net.UDPAddr, payload []byte, timeout time.Duration, capture *Capture) ([]byte, int64, error) {
+func sendRaw(addr *net.UDPAddr, payload []byte, timeout time.Duration, capture *capture.Capture) ([]byte, int64, error) {
 	udp, err := net.DialUDP("udp", nil, addr)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to dial STUN server: %w", err)
