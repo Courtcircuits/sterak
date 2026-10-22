@@ -15,13 +15,13 @@ var stunCmd = &cobra.Command{
 	Short: "STUN mode",
 	Long:  "STUN mode",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		cfg, err := configFromFlags(cmd)
+		cfg, cap, err := configFromFlags(cmd)
 		if err != nil {
 			return err
 		}
-		defer cfg.Capture.Close()
+		defer cap.Close()
 
-		results, err := stun.RunStunTests(cfg)
+		results, err := stun.RunStunTests(cfg, cap)
 		if err != nil {
 			return err
 		}

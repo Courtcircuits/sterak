@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Courtcircuits/sterak/capture"
 	"github.com/Courtcircuits/sterak/config"
 	"github.com/pion/stun"
 	"github.com/schollz/progressbar/v3"
@@ -13,6 +14,7 @@ import (
 
 type LegitStun struct {
 	Cfg config.Config
+	Capture *capture.Capture
 }
 
 func (ls LegitStun) Run() ([]Result, error) {
@@ -27,7 +29,7 @@ func (ls LegitStun) Run() ([]Result, error) {
 		return nil, fmt.Errorf("failed to dial STUN server: %w", err)
 	}
 
-	c, err := stun.NewClient(cfg.Capture.Wrap(conn))
+	c, err := stun.NewClient(ls.Capture.Wrap(conn))
 	if err != nil {
 		conn.Close()
 		return nil, fmt.Errorf("failed to create STUN client: %w", err)
@@ -62,6 +64,7 @@ func (ls LegitStun) Run() ([]Result, error) {
 		results[i] = Result{Time: elapsed, Err: err}
 
 		bar.Add(1)
+		time.Sleep(cfg.Rate)
 	}
 
 	fmt.Println() // New line after progress bar

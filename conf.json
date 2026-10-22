@@ -1,0 +1,9 @@
+{
+		"host": "stun.cloudflare.com:3478",
+		"capture": false,
+		"run_count": 10,
+		"timeout": "50ms",
+		"concurrency": 2,
+		"scenarios": ["legit"],
+		"rate": "1ms"
+}

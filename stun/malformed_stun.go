@@ -17,6 +17,7 @@ import (
 
 type MalformedStun struct {
 	Cfg config.Config
+	Capture *capture.Capture
 }
 
 const (
@@ -126,7 +127,7 @@ func (ms MalformedStun) Run() ([]Result, error) {
 
 	for i := range cfg.RunCount {
 		idx := i % len(malformedCases)
-		reply, elapsed, err := sendRaw(addr, malformedCases[idx].build(), cfg.Timeout, cfg.Capture)
+		reply, elapsed, err := sendRaw(addr, malformedCases[idx].build(), cfg.Timeout, ms.Capture)
 
 		// A dropped packet shows up as a timeout error; a reply (even an
 		// error response) is a success from the transport's point of view.
