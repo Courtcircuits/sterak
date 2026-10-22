@@ -2,8 +2,8 @@
 
 ## Usage
 
-```
-./stun-timing -host stun.cloudflare.com:3478 -runs 1000
+```bash
+./sterak stun --host stun.cloudflare.com:3478 --pcap --runs 10 --scenario both --timeout 2s
 ```
 
 ## Output
