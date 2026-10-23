@@ -90,6 +90,9 @@ func configFromFlags(cmd *cobra.Command) (config.Config, *capture.Capture, error
 
 	if config_location != "" {
 		cfg, err = config.ReadConfigFile(config_location)
+		if err != nil {
+			return config.Config{}, nil, err
+		}
 	}
 
 	var cap *capture.Capture

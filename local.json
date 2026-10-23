@@ -1,0 +1,9 @@
+{
+		"host": "0.0.0.0:3478",
+		"capture": true,
+		"run_count": 10,
+		"timeout": "50ms",
+		"concurrency": 1,
+		"scenarios": ["legit"],
+		"rate": "1ms"
+}

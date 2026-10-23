@@ -114,7 +114,11 @@ type caseStats struct {
 func (ms MalformedStun) Run() ([]Result, error) {
 	cfg := ms.Cfg
 
-	addr, err := net.ResolveUDPAddr("udp", cfg.StunHost)
+	hostPort, err := cfg.HostPort()
+	if err != nil {
+		return nil, err
+	}
+	addr, err := net.ResolveUDPAddr("udp", hostPort)
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve STUN host: %w", err)
 	}

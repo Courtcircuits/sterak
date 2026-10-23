@@ -3,7 +3,6 @@ package stun
 import (
 	"fmt"
 	"net"
-	"strconv"
 	"time"
 
 	"github.com/Courtcircuits/sterak/capture"
@@ -19,12 +18,12 @@ type LegitStun struct {
 
 func (ls LegitStun) Run() ([]Result, error) {
 	cfg := ls.Cfg
-	u, err := stun.ParseURI("stun:" + cfg.StunHost)
+	addr, err := cfg.HostPort()
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse STUN URI: %w", err)
+		return nil, err
 	}
 
-	conn, err := net.Dial("udp", net.JoinHostPort(u.Host, strconv.Itoa(u.Port)))
+	conn, err := net.Dial("udp", addr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to dial STUN server: %w", err)
 	}
