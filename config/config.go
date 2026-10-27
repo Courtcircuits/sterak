@@ -13,6 +13,14 @@ import (
 // DefaultSTUNPort is used when the configured host has no port.
 const DefaultSTUNPort = "3478"
 
+// DefaultTURNPeer is the peer address used for CreatePermission/ChannelBind
+// when none is configured (TEST-NET-3, never routable). Data is only sent to
+// it when ChannelData is enabled.
+const DefaultTURNPeer = "203.0.113.5:4000"
+
+// DefaultTURNDataSize is the ChannelData payload size when none is configured.
+const DefaultTURNDataSize = 64
+
 // HostPort returns StunHost as a dialable "host:port" string. It accepts
 // hostnames, IPv4 and IPv6 literals, with or without a port; IPv6 literals may
 // be bare ("2001:db8::1") or bracketed ("[2001:db8::1]:3478"). A missing port
@@ -112,4 +120,25 @@ type Config struct {
 	Concurrency int           `json:"concurrency"`
 	Scenarios   []string      `json:"scenarios"`
 	Rate        time.Duration `json:"rate"`
+
+	// TURN-only settings. Username/Password are the long-term credentials
+	// (leave empty for a server that does not require authentication); Peer
+	// is the "ip:port" used for CreatePermission/ChannelBind and defaults to
+	// DefaultTURNPeer. With ChannelData set, each session also sends one
+	// ChannelData message of DataSize bytes (DefaultTURNDataSize if 0) to
+	// the peer through the bound channel; SendIndication does the same with
+	// a Send indication.
+	//
+	// PeerListen makes sterak itself the peer: it binds this UDP "ip:port",
+	// and every ChannelData / Send indication payload must arrive there
+	// unmodified, otherwise the session records an error. Peer defaults to
+	// the bound address; set it when the TURN server reaches the listener
+	// under a different address (NAT, wildcard bind).
+	Username       string `json:"username"`
+	Password       string `json:"password"`
+	Peer           string `json:"peer"`
+	ChannelData    bool   `json:"channel_data"`
+	SendIndication bool   `json:"send_indication"`
+	DataSize       int    `json:"data_size"`
+	PeerListen     string `json:"peer_listen"`
 }

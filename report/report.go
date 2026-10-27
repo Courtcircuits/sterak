@@ -29,6 +29,7 @@ func PrintResults(results []stun.Result) {
 
 	if len(successfulTimes) == 0 {
 		fmt.Println("No successful requests")
+		fmt.Printf("Failed requests: %d\n", errorCount)
 		return
 	}
 

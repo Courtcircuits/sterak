@@ -44,13 +44,16 @@ func (ls LegitStun) Run() ([]Result, error) {
 		message := stun.MustBuild(stun.TransactionID, stun.BindingRequest)
 
 		start := time.Now()
+		var eventErr error
 		err := c.Do(message, func(res stun.Event) {
 			if res.Error != nil {
+				eventErr = res.Error
 				return
 			}
 
 			var xorAddr stun.XORMappedAddress
 			if err := xorAddr.GetFrom(res.Message); err != nil {
+				eventErr = err
 				return
 			}
 
@@ -58,6 +61,9 @@ func (ls LegitStun) Run() ([]Result, error) {
 				fmt.Printf("\nYour IP is: %s\n", xorAddr.IP)
 			}
 		})
+		if err == nil {
+			err = eventErr
+		}
 
 		elapsed := time.Since(start).Microseconds()
 		results[i] = Result{Time: elapsed, Err: err}
